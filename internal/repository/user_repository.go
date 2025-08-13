@@ -1,13 +1,28 @@
 package repository
 
-import "github.com/zulal/go-backend/internal/domain"
+import (
+	"github.com/zulal/go-backend/internal/domain"
 
-// UserRepository: Veritabanı işlemleri için arayüz
-type UserRepository interface {
-	Create(user *domain.User) error
-	GetByEmail(email string) (*domain.User, error)
-	GetByID(id uint) (*domain.User, error)
-	GetAll() ([]domain.User, error)
-	Update(user *domain.User) error
-	Delete(id uint) error
+	"gorm.io/gorm"
+)
+
+type UserRepository struct {
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) Create(user *domain.User) error {
+	return r.db.Create(user).Error
+}
+
+func (r *UserRepository) FindByEmail(email string) (*domain.User, error) {
+	var user domain.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
